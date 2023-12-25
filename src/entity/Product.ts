@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Generated, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class products {
@@ -6,11 +6,18 @@ export class products {
   id!: number;
 
   @Column()
+  @Generated('uuid')
+  uuid!: string;
+
+  @Column()
   name!: string;
 
   @Column()
   price!: number;
 
-  @Column()
-  image!: string; // Beri tanda "!" untuk menandakan bahwa nilai akan diinisialisasi nanti
+  @Column({ default: 'zero.png' })
+  imageName!: string;
+
+  @Column({ default: `${process.env.APP_DOMAIN}/src/zero.png` })
+  imageURL!: string; // Beri tanda "!" untuk menandakan bahwa nilai akan diinisialisasi nanti
 }
