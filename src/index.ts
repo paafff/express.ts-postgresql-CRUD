@@ -4,6 +4,7 @@ dotenv.config();
 import express, { Request, Response } from 'express';
 import { AppDataSource } from './data-source';
 import productRouter from './routes/ProductRoutes';
+import cors from 'cors';
 
 const app = express();
 
@@ -23,7 +24,14 @@ app.get('/', (req: Request, res: Response) => {
   res.send('goodluck nang...');
 });
 
-// const PORT = process.env.PORT || 5000;
+const originUrls = process.env.ORIGIN_URL?.split(',');
+app.use(
+  cors({
+    credentials: true,
+    origin: originUrls,
+    // origin: ['http://127.0.0.1:3000', 'http://localhost:3000'],
+  })
+);
 
 //set static file untuk image
 app.use(express.static('./src/assets'));
