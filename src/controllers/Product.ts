@@ -114,51 +114,92 @@ export const updateProduct = async (req: Request, res: Response) => {
         .status(500)
         .json({ msg: 'terjadi kesalahan dalam unggahan file' });
     }
+
+    // const productRepository = AppDataSource.getRepository(products);
+
+    // const findProduct = await productRepository.findOneBy({
+    //   uuid: req.params.uuid,
+    // });
+    const findProduct = await AppDataSource.getRepository(products).findOneBy({
+      uuid: req.params.uuid,
+    });
+
+    //opsi secara langsung
+    // const imageProductName = (req.files as { [fieldname: string]: Express.Multer.File[] })['imageProduct'][0].filename;;
+    // let imageProductName;
+
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+
+    if (
+      files[`imageProduct`] &&
+      findProduct?.imageName != 'zero.png' &&
+      findProduct?.imageName !== null
+    ) {
+      fs.unlinkSync(`./src/assets/productImage/${findProduct?.imageName}`);
+
+      // imageProductName = files[`imageProduct`][0].filename;
+    }
+    //  else {
+    //   imageProductName = findProduct?.imageName;
+    // }
+
+    try {
+      const imageProductName = files[`imageProduct`]
+        ? files[`imageProduct`][0].filename
+        : findProduct?.imageName;
+
+      const imageProductURL = `${process.env.APP_DOMAIN}/productImage/${imageProductName}`;
+      const { name, price } = req.body;
+
+      console.log(
+        '🚀 ~ file: Product.ts:127 ~ findProduct ~ req.params.uuid:',
+        req.params.uuid
+      );
+
+      console.log(
+        '🚀 ~ file: Product.ts:127 ~ findProduct ~ findProduct:',
+        findProduct
+      );
+
+      console.log('🚀 ~ file: Product.ts:149 ~ updateProduct ~ price:', price);
+      console.log('🚀 ~ file: Product.ts:149 ~ updateProduct ~ name:', name);
+
+      // console.log(
+      //   '🚀 ~ file: Product.ts:155 ~ updateProduct ~ files[`imageProduct`][0].fieldname:',
+      //   files['imageProduct'][0].fieldname
+      // );
+
+      // console.log(
+      //   '🚀 ~ file: Product.ts:155 ~ updateProduct ~ files[`imageProduct`][0].filename:',
+      //   files['imageProduct'][0].filename
+      // );
+
+      console.log(
+        '🚀 ~ file: Product.ts:145 ~ updateProduct ~ imageProductName:',
+        imageProductName
+      );
+      console.log(
+        '🚀 ~ file: Product.ts:150 ~ updateProduct ~ imageProductURL:',
+        imageProductURL
+      );
+      // const updateData = findProduct;
+      // findProduct!.name = name;
+      // findProduct!.price = price;
+      // findProduct!.imageName = imageProductName;
+      // findProduct!.imageURL = imageProductURL;
+
+      const updateData = {
+        name: name || findProduct?.name,
+        price: price || findProduct?.price,
+        imageName: imageProductName,
+        imageURL: imageProductURL,
+      };
+
+      await AppDataSource.manager.update(products, findProduct, updateData);
+
+      res.status(200).json('berhasil melakukan update data');
+    } catch (error: any) {
+      res.status(500).json({ msg: error.message });
+    }
   });
-
-  // const productRepository = AppDataSource.getRepository(products);
-
-  // const findProduct = await productRepository.findOneBy({
-  //   uuid: req.params.uuid,
-  // });
-  const findProduct = await AppDataSource.getRepository(products).findOneBy({
-    uuid: req.params.uuid,
-  });
-
-  if (findProduct?.imageName != 'zero.png' && findProduct?.imageName !== null) {
-    fs.unlinkSync(`./src/assets/productImage/${findProduct?.imageName}`);
-  }
-
-  //opsi secara langsung
-  // const imageProductName = (req.files as { [fieldname: string]: Express.Multer.File[] })['imageProduct'][0].filename;;
-  const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-
-  const imageProductName = files[`imageProduct`]
-    ? files[`imageProduct`][0].filename
-    : findProduct?.imageName;
-
-  const imageProductURL = `${process.env.APP_DOMAIN}/productImage/${imageProductName}`;
-
-  try {
-    const { name, price } = req.body;
-
-    // const updateData = findProduct;
-    // findProduct!.name = name;
-    // findProduct!.price = price;
-    // findProduct!.imageName = imageProductName;
-    // findProduct!.imageURL = imageProductURL;
-
-    const updateData = {
-      name: name || findProduct?.name,
-      price: price || findProduct?.price,
-      imageName: imageProductName,
-      imageURL: imageProductURL,
-    };
-
-    await AppDataSource.manager.update(products, findProduct, updateData);
-
-    res.status(200).json('berhasil melakukan update data');
-  } catch (error: any) {
-    res.status(500).json({ msg: error.message });
-  }
 };
